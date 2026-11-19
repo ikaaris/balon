@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Balloon Pop – Pecahkan Balon Pintar</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*{box-sizing:border-box}
+body{margin:0;height:100%;font-family:'Comic Sans MS','Trebuchet MS',system-ui,sans-serif;background:#4fb8ff;overflow:hidden;user-select:none;touch-action:manipulation;color:#1b3a57}
+#app{position:relative;height:100%;display:flex;flex-direction:column;background:linear-gradient(#4fb8ff,#a9e3ff 65%,#e8f9ff);overflow:hidden}
+.cloud{position:absolute;background:#fff;border-radius:50px;opacity:.9;animation:drift linear infinite}
+.cloud:before,.cloud:after{content:"";position:absolute;background:#fff;border-radius:50%}
+.cloud:before{width:50%;height:140%;left:12%;top:-60%}.cloud:after{width:40%;height:120%;right:12%;top:-40%}
+@keyframes drift{from{transform:translateX(-200px)}to{transform:translateX(120vw)}}
+#nav{position:relative;z-index:5;display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 14px;background:#ff6b9d;color:#fff;font-weight:700;box-shadow:0 3px 0 #d94f80}
+#nav .pill{background:rgba(255,255,255,.25);padding:4px 12px;border-radius:20px;white-space:nowrap}
+#nav button{border:0;background:#fff;color:#d94f80;border-radius:20px;padding:5px 12px;font:inherit;font-weight:700;cursor:pointer}
+#qbar{position:relative;z-index:5;margin:10px 12px 0;padding:10px 14px;background:#fff;border-radius:18px;box-shadow:0 4px 0 rgba(0,0,0,.12)}
+#qtop{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+#cat{padding:2px 12px;border-radius:12px;color:#fff;font-weight:700;font-size:13px}
+#timer{margin-left:auto;font-weight:700;font-size:18px}
+#qtext{font-size:clamp(16px,2.6vw,24px);font-weight:700;line-height:1.3}
+#prog{height:12px;background:#e3eef7;border-radius:8px;margin-top:8px;overflow:hidden}
+#progf{height:100%;width:0;background:linear-gradient(90deg,#ffd23f,#ff9f1c);transition:width .5s;border-radius:8px}
+#stage{position:relative;flex:1;z-index:2;overflow:hidden}
+.b{position:absolute;left:0;top:0;width:132px;height:166px;border-radius:50% 50% 48% 48%/55% 55% 45% 45%;display:flex;align-items:center;justify-content:center;text-align:center;padding:14px 12px 22px;color:#fff;font-weight:700;font-size:14px;line-height:1.2;cursor:pointer;text-shadow:0 1px 2px rgba(0,0,0,.35);box-shadow:inset -10px -14px 22px rgba(0,0,0,.18),inset 10px 10px 18px rgba(255,255,255,.35);will-change:transform}
+.b:before{content:"";position:absolute;left:20%;top:12%;width:20%;height:26%;border-radius:50%;background:rgba(255,255,255,.55);transform:rotate(25deg)}
+.b:after{content:"";position:absolute;left:50%;bottom:-16px;width:2px;height:34px;background:rgba(80,80,80,.5);transform:translateX(-50%)}
+.b.hov{filter:brightness(1.15) drop-shadow(0 0 12px #fff);outline:4px solid #fff}
+.b.glow{animation:glow .5s infinite alternate}
+@keyframes glow{to{filter:brightness(1.4) drop-shadow(0 0 18px #ffe600)}}
+#cam{position:absolute;right:10px;bottom:10px;width:150px;border-radius:12px;border:3px solid #fff;transform:scaleX(-1);z-index:6;display:none;background:#000}
+#fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:7}
+#cur{position:fixed;width:34px;height:34px;margin:-17px 0 0 -17px;border:4px solid #fff;border-radius:50%;background:rgba(255,80,80,.55);pointer-events:none;z-index:20;display:none;box-shadow:0 0 10px rgba(0,0,0,.4)}
+#cur.pin{background:rgba(60,220,90,.8);transform:scale(.7)}
+#toast{position:absolute;left:50%;top:14px;transform:translate(-50%,-30px);z-index:9;padding:10px 18px;border-radius:16px;font-weight:700;background:#fff;box-shadow:0 4px 0 rgba(0,0,0,.15);opacity:0;transition:.3s;max-width:90%;text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+.scr{position:absolute;inset:0;z-index:30;display:none;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:16px;background:rgba(70,160,230,.88);overflow:auto}
+.scr.on{display:flex}
+.card{background:#fff;border-radius:26px;padding:24px 28px;max-width:520px;width:100%;box-shadow:0 8px 0 rgba(0,0,0,.15)}
+h1{margin:0 0 4px;font-size:clamp(26px,6vw,40px);color:#ff4f8b}
+.sub{margin:0 0 14px}
+input{width:100%;padding:12px;font:inherit;font-size:18px;border:3px solid #7ad0ff;border-radius:14px;text-align:center;margin-bottom:12px}
+.btn{display:block;width:100%;border:0;border-radius:16px;padding:12px;margin-top:8px;font:inherit;font-size:18px;font-weight:700;color:#fff;background:#2fbf71;box-shadow:0 5px 0 #1f8f53;cursor:pointer}
+.btn.alt{background:#ff9f1c;box-shadow:0 5px 0 #c97800}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #1f8f53}
+.note{font-size:12px;margin-top:10px;opacity:.75}
+.big{font-size:clamp(34px,9vw,64px);font-weight:700;color:#fff;text-shadow:0 4px 0 rgba(0,0,0,.2)}
+.stars{font-size:48px;letter-spacing:6px}
+@media(max-width:600px){.b{width:104px;height:132px;font-size:12px;padding:10px 8px 18px}#cam{width:96px}}
+</style></head>
+<body>
+<div id="app">
+ <div class="cloud" style="width:140px;height:40px;top:14%;animation-duration:60s"></div>
+ <div class="cloud" style="width:100px;height:30px;top:40%;animation-duration:85s;animation-delay:-30s"></div>
+ <div class="cloud" style="width:170px;height:46px;top:68%;animation-duration:70s;animation-delay:-10s"></div>
+ <div id="nav"><span class="pill" id="nName">👤 -</span><span class="pill" id="nLvl">Level 1</span><span class="pill">⭐ <span id="nScore">0</span></span><button id="sndBtn">🔊 Suara</button></div>
+ <div id="qbar"><div id="qtop"><span id="cat">LOTS</span><span id="qno"></span><span id="timer">⏱ 0</span></div><div id="qtext"></div><div id="prog"><div id="progf"></div></div></div>
+ <div id="stage"></div>
+ <video id="cam" playsinline muted></video>
+ <canvas id="fx"></canvas>
+ <div id="toast"></div>
+
+ <div class="scr on" id="start"><div class="card">
+  <h1>🎈 BALLOON POP</h1><p class="sub"><b>Pecahkan Balon Pintar</b><br>IPAS Kelas 6 • Sistem Pencernaan</p>
+  <input id="nameIn" maxlength="20" placeholder="Tulis namamu di sini">
+  <button class="btn" id="goCam">📷 Main dengan Kamera (Pinch)</button>
+  <button class="btn alt" id="goMouse">🖱️ Main dengan Mouse / Sentuh</button>
+  <p class="note">Kamera baru dinyalakan setelah kamu menekan tombol kamera dan menyetujui izin. Gerakkan tangan untuk menggeser penunjuk, lalu cubit jari telunjuk dan jempol (pinch) untuk memecahkan balon.</p>
+ </div></div>
+ <div class="scr" id="lvl"><div class="big" id="lvlT">Level 1</div><div class="big" style="font-size:24px" id="lvlS"></div></div>
+ <div class="scr" id="end"><div class="card">
+  <h1>🎉 Hebat, <span id="eName"></span>!</h1><div class="stars" id="eStars"></div>
+  <p style="font-size:22px;margin:6px 0"><b>Skor: <span id="eScore"></span></b></p>
+  <p id="eMsg"></p><p>Jawaban benar: <b id="eOk"></b> dari 15</p>
+  <button class="btn" id="again">🔁 Main Lagi</button>
+ </div></div>
+</div>
+<div id="cur"></div>
+
+<script>
+// ===== Bank soal: jawaban benar selalu di indeks 0 (diacak saat tampil) =====
+const Q=[
+{c:'LOTS',q:'Setelah dari mulut, makanan masuk ke…',a:['Kerongkongan','Lambung','Usus halus','Usus besar'],h:'Makanan ditelan lewat kerongkongan menuju lambung.'},
+{c:'MOTS',q:'Mengapa makanan perlu dikunyah sebelum ditelan?',a:['Agar makanan menjadi halus dan mudah dicerna','Agar makanan menjadi dingin','Agar rasa makanan hilang','Agar makanan langsung menjadi tinja'],h:'Mengunyah adalah pencernaan mekanik di mulut.'},
+{c:'HOTS',q:'Rani menelan makanan tanpa dikunyah dan perutnya terasa sakit. Penyebab paling mungkin?',a:['Makanan masih besar sehingga lambung bekerja lebih berat','Kerongkongan menghasilkan empedu','Usus besar berhenti bekerja','Air liur menjadi asam lambung'],h:'Makanan yang tidak halus membebani lambung.'},
+{c:'LOTS',q:'Organ tempat penyerapan sari makanan terbanyak adalah…',a:['Usus halus','Usus besar','Kerongkongan','Anus'],h:'Sari makanan diserap di dinding usus halus.'},
+{c:'MOTS',q:'Apa fungsi asam lambung?',a:['Membunuh kuman dan membantu mencerna protein','Menyerap air dari sisa makanan','Membuat air liur','Menyimpan sari makanan'],h:'Asam lambung (HCl) membantu mencerna dan membunuh kuman.'},
+{c:'HOTS',q:'Seorang anak jarang makan sayur dan buah, lalu sulit buang air besar. Zat yang kurang adalah…',a:['Serat','Garam','Gula','Kalsium'],h:'Kurang serat menyebabkan sembelit.'},
+{c:'LOTS',q:'Enzim ptialin dalam air liur mencerna…',a:['Karbohidrat (amilum)','Protein','Lemak','Vitamin'],h:'Ptialin mengubah amilum menjadi gula sederhana.'},
+{c:'MOTS',q:'Urutan saluran pencernaan yang benar adalah…',a:['Mulut → kerongkongan → lambung → usus halus → usus besar → anus','Mulut → lambung → kerongkongan → usus besar → usus halus → anus','Mulut → usus halus → lambung → kerongkongan → anus','Kerongkongan → mulut → lambung → usus besar → usus halus'],h:'Ikuti jalan makanan dari mulut sampai anus.'},
+{c:'HOTS',q:'Hati menghasilkan empedu. Jika produksi empedu terganggu, makanan yang sulit dicerna adalah…',a:['Berlemak','Berkarbohidrat','Berair','Berserat'],h:'Empedu membantu mencerna lemak.'},
+{c:'LOTS',q:'Sisa makanan yang tidak dicerna dikeluarkan melalui…',a:['Anus','Mulut','Lambung','Kerongkongan'],h:'Feses keluar lewat anus.'},
+{c:'MOTS',q:'Apa tugas utama usus besar?',a:['Menyerap air dari sisa makanan','Memecah protein','Menghasilkan air liur','Menelan makanan'],h:'Usus besar menyerap air dan membentuk feses.'},
+{c:'HOTS',q:'Budi sering telat makan dan suka makanan pedas, lalu ulu hatinya perih. Saran paling tepat?',a:['Makan teratur dan kurangi makanan pedas','Makan hanya sekali sehari','Minum minuman bersoda setiap hari','Tidak perlu makan saat perih'],h:'Pola makan teratur mencegah maag.'},
+{c:'LOTS',q:'Manakah yang BUKAN bagian saluran pencernaan?',a:['Jantung','Lambung','Usus halus','Kerongkongan'],h:'Jantung adalah organ peredaran darah.'},
+{c:'MOTS',q:'Pankreas menghasilkan…',a:['Enzim pencernaan','Empedu','Air liur','Asam lambung'],h:'Pankreas menghasilkan enzim untuk karbohidrat, protein, dan lemak.'},
+{c:'HOTS',q:'Diare berbahaya karena tubuh kehilangan banyak cairan. Tindakan awal yang tepat adalah…',a:['Minum cukup air atau oralit','Tidak minum seharian','Makan makanan sangat pedas','Minum minuman manis bersoda'],h:'Cairan harus diganti agar tidak dehidrasi.'}
+];
+const COL=['#ff5a5f','#ff9f1c','#2ec4b6','#7b5cff','#ff4fa3','#3a86ff','#35c759'];
+const CATC={LOTS:'#2fbf71',MOTS:'#ff9f1c',HOTS:'#e5384f'};
+const $=id=>document.getElementById(id);
+const S={name:'',score:0,idx:0,ok:0,sound:true,lock:true,time:0,cam:false,bs:[],pinchWas:false,cx:0,cy:0,hand:false,last:0,pcd:0};
+let parts=[],actx;
+
+// ===== Suara =====
+function beep(f,d,t='sine',v=.15,delay=0){if(!S.sound)return;try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const o=actx.createOscillator(),g=actx.createGain();o.type=t;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(actx.destination);const s=actx.currentTime+delay;o.start(s);g.gain.exponentialRampToValueAtTime(.001,s+d);o.stop(s+d)}catch(e){}}
+const sPop=()=>{beep(520,.12,'square');beep(880,.15,'triangle',.15,.06)};
+const sBad=()=>{beep(200,.3,'sawtooth',.12)};
+const sWin=()=>[523,659,784,1047].forEach((f,i)=>beep(f,.25,'triangle',.15,i*.12));
+$('sndBtn').onclick=()=>{S.sound=!S.sound;$('sndBtn').textContent=S.sound?'🔊 Suara':'🔇 Senyap'};
+
+// ===== Toast =====
+let tt;function toast(m,ms=1800){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),ms)}
+
+// ===== Mulai =====
+function begin(cam){
+  S.name=$('nameIn').value.trim();
+  if(!S.name){toast('Tulis namamu dulu ya!');$('nameIn').focus();return}
+  $('nName').textContent='👤 '+S.name;
+  S.score=0;S.idx=0;S.ok=0;$('nScore').textContent=0;
+  $('start').classList.remove('on');
+  if(cam)startCam();
+  nextQ();
+}
+$('goMouse').onclick=()=>begin(false);
+$('goCam').onclick=()=>begin(true);
+$('again').onclick=()=>{$('end').classList.remove('on');$('start').classList.add('on')};
+
+// ===== Kamera + MediaPipe Hands (hanya setelah tombol ditekan) =====
+async function startCam(){
+  try{
+    toast('Meminta izin kamera…',2500);
+    const st=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480,facingMode:'user'}});
+    const v=$('cam');v.srcObject=st;await v.play();v.style.display='block';
+    await new Promise((ok,no)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js';s.onload=ok;s.onerror=no;document.head.appendChild(s)});
+    const hands=new Hands({locateFile:f=>'https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/'+f});
+    hands.setOptions({maxNumHands:1,modelComplexity:0,minDetectionConfidence:.6,minTrackingConfidence:.5});
+    hands.onResults(onHand);
+    await hands.initialize();
+    S.cam=true;toast('Kamera siap! Cubit jari untuk memecahkan balon ✋');
+    let busy=false;
+    (async function feed(){if(!S.cam)return;if(!busy&&v.readyState>=2){busy=true;try{await hands.send({image:v})}catch(e){}busy=false}requestAnimationFrame(feed)})();
+  }catch(e){
+    S.cam=false;$('cam').style.display='none';
+    toast('Kamera tidak tersedia. Pakai mouse / sentuh saja ya!',3500);
+  }
+}
+function onHand(r){
+  const L=r.multiHandLandmarks&&r.multiHandLandmarks[0],cur=$('cur');
+  if(!L){S.hand=false;cur.style.display='none';return}
+  const R=$('app').getBoundingClientRect(),i=L[8],t=L[4];
+  const x=R.left+(1-i.x)*R.width,y=R.top+i.y*R.height;
+  S.cx=S.hand?S.cx*.6+x*.4:x;S.cy=S.hand?S.cy*.6+y*.4:y;S.hand=true;
+  cur.style.display='block';cur.style.left=S.cx+'px';cur.style.top=S.cy+'px';
+  const size=Math.hypot(L[0].x-L[9].x,L[0].y-L[9].y)||.2;
+  const pinch=Math.hypot(i.x-t.x,i.y-t.y)/size<.38;
+  cur.classList.toggle('pin',pinch);
+  if(pinch&&!S.pinchWas&&performance.now()>S.pcd){S.pcd=performance.now()+500;const b=hit(S.cx,S.cy);if(b)answer(b)}
+  S.pinchWas=pinch;
+}
+function hit(x,y){const e=document.elementFromPoint(x,y),el=e&&e.closest&&e.closest('.b');return el?S.bs.find(b=>b.el===el):null}
+
+// ===== Alur soal =====
+function nextQ(){
+  if(S.idx>=Q.length)return finish();
+  const lv=Math.floor(S.idx/3)+1,first=S.idx%3===0;
+  $('nLvl').textContent='Level '+lv;
+  if(first){$('lvlT').textContent='Level '+lv;$('lvlS').textContent=['Pemanasan','Mulai Seru','Makin Pintar','Hampir Jago','Level Juara!'][lv-1];$('lvl').classList.add('on');S.lock=true;clearBalloons();setTimeout(()=>{$('lvl').classList.remove('on');showQ()},1600)}else showQ();
+}
+function showQ(){
+  const q=Q[S.idx];
+  $('cat').textContent=q.c;$('cat').style.background=CATC[q.c];
+  $('qno').textContent='Soal '+(S.idx%3+1)+'/3';
+  $('qtext').textContent=q.q;
+  $('progf').style.width=(S.idx/Q.length*100)+'%';
+  S.time={LOTS:25,MOTS:35,HOTS:45}[q.c];S.tmax=S.time;
+  makeBalloons(q);S.lock=false;
+}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+function clearBalloons(){S.bs.forEach(b=>b.el.remove());S.bs=[]}
+function makeBalloons(q){
+  clearBalloons();
+  const st=$('stage'),W=st.clientWidth,H=st.clientHeight,bw=W<600?104:132,bh=W<600?132:166;
+  const opts=shuffle(q.a.map((t,i)=>({t,ok:i===0}))),n=opts.length,cols=shuffle(COL.slice());
+  opts.forEach((o,i)=>{
+    const el=document.createElement('div');el.className='b';el.textContent=o.t;
+    el.style.background=`radial-gradient(circle at 35% 30%,${cols[i]}cc,${cols[i]})`;el.dataset.c=cols[i];
+    st.appendChild(el);
+    const amp=Math.min(H*.12,50),lo=amp+6,hi=H-bh-30-amp;
+    const b={el,ok:o.ok,x:(i+.5)*W/n-bw/2,y0:lo+Math.random()*Math.max(0,hi-lo),amp,sp:.8+Math.random()*.9,ph:Math.random()*6.28};
+    el.addEventListener('pointerdown',ev=>{ev.preventDefault();answer(b)});
+    S.bs.push(b);
+  });
+}
+function answer(b){
+  if(S.lock||!b.el.isConnected)return;
+  const q=Q[S.idx],r=b.el.getBoundingClientRect(),R=$('app').getBoundingClientRect();
+  const px=r.left-R.left+r.width/2,py=r.top-R.top+r.height/2;
+  if(b.ok){
+    S.lock=true;sPop();burst(px,py,b.el.dataset.c,40,true);
+    const gain={LOTS:10,MOTS:15,HOTS:20}[q.c]+Math.floor(S.time/5);
+    S.score+=gain;S.ok++;$('nScore').textContent=S.score;
+    b.el.remove();S.bs=S.bs.filter(x=>x!==b);
+    toast('🎉 Benar! +'+gain+' poin. '+q.h,2600);
+    setTimeout(()=>{S.idx++;nextQ()},2700);
+  }else{
+    sBad();burst(px,py,'#888',18,false);
+    S.score=Math.max(0,S.score-5);$('nScore').textContent=S.score;
+    b.el.remove();S.bs=S.bs.filter(x=>x!==b);
+    toast('😅 Belum tepat (−5). Coba balon lain!',1500);
+  }
+}
+function timeout(){
+  S.lock=true;sBad();const c=S.bs.find(b=>b.ok);if(c)c.el.classList.add('glow');
+  toast('⏰ Waktu habis! Jawaban: '+Q[S.idx].a[0]+'. '+Q[S.idx].h,3200);
+  setTimeout(()=>{S.idx++;nextQ()},3300);
+}
+function finish(){
+  clearBalloons();$('progf').style.width='100%';sWin();
+  $('eName').textContent=S.name;$('eScore').textContent=S.score;$('eOk').textContent=S.ok;
+  const s=S.ok>=13?3:S.ok>=9?2:1;$('eStars').textContent='⭐'.repeat(s)+'☆'.repeat(3-s);
+  $('eMsg').textContent=s===3?'Luar biasa! Kamu jagoan sistem pencernaan!':s===2?'Bagus sekali! Sedikit lagi jadi juara.':'Terus semangat! Coba lagi supaya makin pintar.';
+  $('end').classList.add('on');
+  for(let i=0;i<5;i++)setTimeout(()=>burst(Math.random()*innerWidth,Math.random()*innerHeight*.6,COL[i],40,true),i*250);
+}
+
+// ===== Partikel =====
+function burst(x,y,c,n,good){for(let i=0;i<n;i++){const a=Math.random()*6.28,s=2+Math.random()*(good?7:4);parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-(good?2:0),l:1,c:good&&i%3==0?'#ffd23f':c,r:3+Math.random()*5})}}
+const cv=$('fx'),cx=cv.getContext('2d');
+function size(){cv.width=cv.clientWidth;cv.height=cv.clientHeight}
+addEventListener('resize',size);size();
+
+// ===== Loop utama =====
+function loop(t){
+  const dt=Math.min((t-S.last)/1000,.1);S.last=t;
+  if(cv.width!==cv.clientWidth)size();
+  S.bs.forEach(b=>{b.el.style.transform=`translate(${b.x}px,${b.y0+Math.sin(t/1000*b.sp+b.ph)*b.amp}px)`});
+  if(!S.lock&&S.tmax){S.time-=dt;if(S.time<=0){S.time=0;timeout()}}
+  $('timer').textContent='⏱ '+Math.ceil(S.time);
+  if(S.hand){const h=hit(S.cx,S.cy);S.bs.forEach(b=>b.el.classList.toggle('hov',b===h))}
+  cx.clearRect(0,0,cv.width,cv.height);
+  parts=parts.filter(p=>p.l>0);
+  parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.18;p.l-=.02;cx.globalAlpha=Math.max(p.l,0);cx.fillStyle=p.c;cx.beginPath();cx.arc(p.x,p.y,p.r,0,6.28);cx.fill()});
+  cx.globalAlpha=1;
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body></html>
